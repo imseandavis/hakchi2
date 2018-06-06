@@ -1158,7 +1158,7 @@ namespace com.clusterrr.hakchi_gui
             {
                 if (Uninstall())
                 {
-                    if (ConfigIni.CustomFlashed && MessageBox.Show(Resources.UninstallQ2, Resources.AreYouSure, MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
+                    if (/*ConfigIni.CustomFlashed &&*/ MessageBox.Show(Resources.UninstallQ2, Resources.AreYouSure, MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
                         == System.Windows.Forms.DialogResult.Yes)
                     {
                         if (FlashOriginalKernel())
@@ -1711,30 +1711,37 @@ namespace com.clusterrr.hakchi_gui
             {
                 if (WaitingClovershellForm.WaitForDevice(this))
                 {
-                    var screenshot = WorkerForm.TakeScreenshot();
-                    var screenshotPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
-                    screenshot.Save(screenshotPath, ImageFormat.Png);
-                    var showProcess = new Process()
+                    if (Control.ModifierKeys != Keys.Shift)
                     {
-                        StartInfo = new ProcessStartInfo()
+                        var screenshot = WorkerForm.TakeScreenshot();
+                        var screenshotPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
+                        screenshot.Save(screenshotPath, ImageFormat.Png);
+                        var showProcess = new Process()
                         {
-                            FileName = screenshotPath
-                        }
-                    };
-                    showProcess.Start();
-                    new Thread(delegate ()
+                            StartInfo = new ProcessStartInfo()
+                            {
+                                FileName = screenshotPath
+                            }
+                        };
+                        showProcess.Start();
+                        new Thread(delegate ()
+                        {
+                            try
+                            {
+                                Thread.Sleep(5000);
+                                showProcess.WaitForExit();
+                            }
+                            catch { }
+                            try
+                            {
+                                File.Delete(screenshotPath);
+                            }
+                            catch { }
+                        }).Start();
+                    } else // Shift pressed
                     {
-                        try
-                        {
-                            showProcess.WaitForExit();
-                        }
-                        catch { }
-                        try
-                        {
-                            File.Delete(screenshotPath);
-                        }
-                        catch { }
-                    }).Start();
+                        new LiveViewForm().ShowDialog();
+                    }
                 }
             }
             catch (Exception ex)
